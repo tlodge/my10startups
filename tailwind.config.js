@@ -1,129 +1,120 @@
-const defaultSans = [
-  "system-ui",
-  "-apple-system",
-  "BlinkMacSystemFont",
-  '"Segoe UI"',
-  "Roboto",
-  '"Helvetica Neue"',
-  "Arial",
-  '"Noto Sans"',
-  "sans-serif",
-  '"Apple Color Emoji"',
-  '"Segoe UI Emoji"',
-  '"Segoe UI Symbol"',
-  '"Noto Color Emoji"',
-];
-
-const defaultSerif = [
-  "Georgia",
-  "Cambria",
-  '"Times New Roman"',
-  "Times",
-  "serif",
-];
+const defaultTheme = require('tailwindcss/defaultTheme')
+const mdx = require('@mdx-js/mdx')
 
 module.exports = {
   purge: {
-    mode: "all",
-    content: [
-      "./components/**/*.{js,ts,jsx,tsx,css}",
-      "./pages/**/*.{js,ts,jsx,tsx}",
-    ],
+    mode: 'all',
+    content: ['./src/**/*.{js,mdx}', './next.config.js'],
     options: {
-      safelist: { deep: [/blur$/] },
-    },
-  },
-  darkMode: "class",
-  theme: {
-    extend: {
-      colors: {
-        "neon-orange": "#f92300",
-      },
-      fontSize: {
-        "7xl": "4.5rem",
-      },
-      spacing: {
-        14: "3.375rem",
-      },
-      typography: (theme) => ({
-        DEFAULT: {
-          css: {
-            color: theme("colors.gray.800"),
-            blockquote: {
-              borderLeftColor: theme("colors.gray.700"),
-            },
-            "ol > li::before": {
-              color: theme("colors.gray.700"),
-            },
-            "ul > li::before": {
-              backgroundColor: theme("colors.gray.700"),
-            },
-            a: {
-              color: theme("colors.neon-orange"),
-            },
+      extractors: [
+        {
+          extensions: ['mdx'],
+          extractor: (content) => {
+            content = mdx.sync(content)
+
+            // Capture as liberally as possible, including things like `h-(screen-1.5)`
+            const broadMatches = content.match(/[^<>"'`\s]*[^<>"'`\s:]/g) || []
+
+            // Capture classes within other delimiters like .block(class="w-1/2") in Pug
+            const innerMatches =
+              content.match(/[^<>"'`\s.(){}[\]#=%]*[^<>"'`\s.(){}[\]#=%:]/g) || []
+
+            return broadMatches.concat(innerMatches)
           },
         },
-
-        dark: {
+      ],
+    },
+  },
+  theme: {
+    extend: {
+      spacing: {
+        '9/16': '56.25%',
+      },
+      lineHeight: {
+        '11': '2.75rem',
+        '12': '3rem',
+        '13': '3.25rem',
+        '14': '3.5rem',
+      },
+      fontFamily: {
+        sans: ['Inter var', ...defaultTheme.fontFamily.sans],
+      },
+      colors: {
+        code: {
+          green: '#b5f4a5',
+          yellow: '#ffe484',
+          purple: '#d9a9ff',
+          red: '#ff8383',
+          blue: '#93ddfd',
+          white: '#fff',
+        },
+      },
+      typography: (theme) => ({
+        default: {
           css: {
-            color: theme("colors.gray.100"),
-            blockquote: {
-              borderLeftColor: theme("colors.gray.300"),
-            },
-            "ol > li::before": {
-              color: theme("colors.gray.300"),
-            },
-            "ul > li::before": {
-              backgroundColor: theme("colors.gray.300"),
-            },
-            a: {
-              color: theme("colors.yellow.500"),
-            },
-            h1: {
-              color: theme("colors.gray.100"),
-            },
+            color: theme('colors.gray.700'),
             h2: {
-              color: theme("colors.gray.100"),
+              fontWeight: '700',
+              letterSpacing: theme('letterSpacing.tight'),
+              color: theme('colors.gray.900'),
             },
             h3: {
-              color: theme("colors.gray.100"),
+              fontWeight: '600',
+              color: theme('colors.gray.900'),
             },
-            h4: {
-              color: theme("colors.gray.100"),
+            'ol li:before': {
+              fontWeight: '600',
+              color: theme('colors.gray.500'),
             },
-            h5: {
-              color: theme("colors.gray.100"),
-            },
-            h6: {
-              color: theme("colors.gray.100"),
-            },
-            strong: {
-              color: theme("colors.gray.100"),
+            'ul li:before': {
+              backgroundColor: theme('colors.gray.400'),
             },
             code: {
-              color: theme("colors.gray.100"),
+              color: theme('colors.gray.900'),
             },
-            figcaption: {
-              color: theme("colors.gray.100"),
+            a: {
+              color: theme('colors.gray.900'),
+            },
+            pre: {
+              color: theme('colors.gray.200'),
+              backgroundColor: theme('colors.gray.800'),
             },
             blockquote: {
-              color: theme("colors.gray.100"),
-              borderLeftColor: theme("colors.gray.200"),
+              color: theme('colors.gray.900'),
+              borderLeftColor: theme('colors.gray.200'),
             },
           },
         },
       }),
     },
-    fontFamily: {
-      display: ["Open Sans", ...defaultSans],
-      body: ["Merriweather", ...defaultSerif],
-    },
   },
   variants: {},
-  plugins: [require("@tailwindcss/typography")],
-  variants: {
-    extend: {
-      typography: ["dark"],
+  plugins: [
+    require('@tailwindcss/ui'),
+    require('@tailwindcss/typography'),
+    function ({ addBase, addComponents, theme }) {
+      addBase([
+        {
+          '@font-face': {
+            fontFamily: 'Inter var',
+            fontWeight: '100 900',
+            fontStyle: 'normal',
+            fontNamedInstance: 'Regular',
+            fontDisplay: 'swap',
+            src: 'url("/fonts/Inter-roman.var-latin.woff2?3.13") format("woff2")',
+          },
+        },
+        {
+          '@font-face': {
+            fontFamily: 'Inter var',
+            fontWeight: '100 900',
+            fontStyle: 'italic',
+            fontNamedInstance: 'Italic',
+            fontDisplay: 'swap',
+            src: 'url("/fonts/Inter-italic.var-latin.woff2?3.13") format("woff2")',
+          },
+        },
+      ])
     },
-  },
-};
+  ],
+}
